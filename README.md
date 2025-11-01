@@ -7,7 +7,6 @@ Production-ready Next.js app demonstrating two retrieval patterns:
 This is the lightweight README. For full guides see:
 - Extended deployment: `AZURE_DEPLOYMENT_GUIDE.md`
 - Authentication details: `docs/AUTHENTICATION.md`
-- Original comprehensive README: See commit history if needed.
 
 ## Quick Start
 

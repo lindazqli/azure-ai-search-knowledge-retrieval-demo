@@ -12,6 +12,7 @@ interface KnowledgeBase {
   outputMode?: 'answerSynthesis' | 'extractiveData'
   retrievalReasoningEffort?: { kind: 'minimal' | 'low' | 'medium' | 'high' }
   retrievalInstructions?: string
+  answerInstructions?: string // Add at root level per API spec
   requestLimits?: any
   '@odata.etag'?: string
 }
