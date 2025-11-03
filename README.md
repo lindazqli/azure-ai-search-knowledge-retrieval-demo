@@ -1,126 +1,80 @@
-# Azure AI Search – Knowledge Retrieval Demo (Minimal)
+# Azure AI Search – Foundry Knowledge Demo
 
-Production-ready Next.js app demonstrating two retrieval patterns:
-1. Azure AI Search Knowledge Bases (answer synthesis, citations)
-2. Azure AI Foundry Assistants (MCP tool integration)
+Production-ready Next.js app demonstrating advanced RAG with Azure AI Search Knowledge Bases and Azure AI Foundry Agent Service.
 
-This is the lightweight README. For full guides see:
-- Extended deployment: `AZURE_DEPLOYMENT_GUIDE.md`
-- Authentication details: `docs/AUTHENTICATION.md`
+## Deploy to Cloud
 
-## Quick Start
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Ffarzad528%2Fazure-ai-search-knowledge-retrieval-demo%2Fmain%2Finfra%2Fmain.json)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffarzad528%2Fazure-ai-search-knowledge-retrieval-demo)
+
+## Quick Start (Local)
 
 ```bash
 git clone https://github.com/farzad528/azure-ai-search-knowledge-retrieval-demo.git
 cd azure-ai-search-knowledge-retrieval-demo
 npm install
 cp .env.example .env.local
-# edit .env.local with your values
-npm run dev
 ```
-Open http://localhost:3000
 
-### Required Environment Variables
-Minimum for the `/test` knowledge base playground:
+Edit `.env.local` with your Azure credentials:
+
 ```bash
+# Required: Azure AI Search + Azure OpenAI
 AZURE_SEARCH_ENDPOINT=https://<your-search>.search.windows.net
 AZURE_SEARCH_API_KEY=<admin-or-query-key>
 AZURE_SEARCH_API_VERSION=2025-11-01-preview
 NEXT_PUBLIC_AZURE_OPENAI_ENDPOINT=https://<your-openai>.openai.azure.com
 AZURE_OPENAI_API_KEY=<openai-key>
-```
-Optional (enables Assistants `/agents`):
-```bash
+
+# Optional: Azure AI Foundry Agent Service
 FOUNDRY_PROJECT_ENDPOINT=https://<resource>.services.ai.azure.com/api/projects/<project>
 FOUNDRY_API_VERSION=2025-05-01
 AZURE_AUTH_METHOD=service-principal
-AZURE_TENANT_ID=<tenant>
-AZURE_CLIENT_ID=<appId>
+AZURE_TENANT_ID=<tenant-id>
+AZURE_CLIENT_ID=<app-id>
 AZURE_CLIENT_SECRET=<secret>
 ```
 
-### Create a Knowledge Base (UI)
-1. Run locally
-2. Navigate to `/knowledge`
-3. Add sources (blob / search index / web crawl)
-4. Configure output modality (answerSynthesis or extractive)
-5. Test queries in `/test`
+Start the app:
 
-## Minimal API Usage (Retrieve)
-
-Example request (cURL) with runtime controls reflected:
 ```bash
-curl -X POST "$AZURE_SEARCH_ENDPOINT/agents/my-agent/retrieve?api-version=2025-11-01-preview" \
-  -H "api-key: $AZURE_SEARCH_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "messages": [{"role":"user","content":"Summarize recent revenue highlights."}],
-    "outputMode": "answer",
-    "retrievalReasoningEffort": {"kind": "standard"},
-    "knowledgeSourceParams": {
-      "alwaysQuerySource": true,
-      "includeReferences": true,
-      "maxSubQueries": 3
-    }
-  }'
+npm run dev
 ```
 
-TypeScript (fetch) snippet:
-```ts
-const resp = await fetch(`${process.env.AZURE_SEARCH_ENDPOINT}/agents/my-agent/retrieve?api-version=2025-11-01-preview`, {
-  method: 'POST',
-  headers: {
-    'api-key': process.env.AZURE_SEARCH_API_KEY!,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    messages: [{ role: 'user', content: 'Summarize recent revenue highlights.' }],
-    outputMode: 'answer',
-    retrievalReasoningEffort: { kind: 'standard' },
-    knowledgeSourceParams: {
-      alwaysQuerySource: true,
-      includeReferences: true,
-      maxSubQueries: 3
-    }
-  })
-});
-const data = await resp.json();
-```
+Open [http://localhost:3000](http://localhost:3000)
 
-Notes:
-- Omit boolean params if false; send only those set to true.
-- Use `outputMode: 'answer'` (synthesized) or `'extractive'` (raw chunks).
-- `retrievalReasoningEffort.kind` controls sub-query reasoning (e.g. `none | standard | enhanced`).
+## Recorded Demo
 
-## Security (Essentials)
-- Keep keys in environment variables; never commit them.
-- View Code modal masks sensitive headers (toggle to reveal). Treat masked values as secrets.
-- Prefer Service Principal (`AZURE_AUTH_METHOD=service-principal`) for automatic token refresh.
-- Rotate Search and OpenAI keys periodically.
+<!-- Video placeholder - coming soon -->
+_Video walkthrough coming soon_
 
-## Lightweight Deployment Options
-- Vercel: Fastest path. Set env vars in project settings and deploy.
-- Azure Static Web App or App Service: Use same env names; consider Managed Identity where feasible.
-See `AZURE_DEPLOYMENT_GUIDE.md` for full scripts and alternatives.
+## Application Routes
 
-## Troubleshooting (Quick)
-| Issue | Fix |
-|-------|-----|
-| 401 (Search) | Check API key + preview API version |
-| 401 (Foundry) | SP credentials or expired manual token |
-| Empty KB list | Verify endpoint + key + API version |
-| No citations | Ensure `includeReferences` true and sources ingested |
+### 1. Knowledge (`/knowledge`)
+View all knowledge bases from your Azure AI Search resource. In **Admin Mode**, create and update knowledge bases with diverse sources (Blob Storage, Search Index, Web, SharePoint, OneLake).
+
+**Use when:** You need to manage knowledge bases and configure data sources.
+
+### 2. Playground (`/playground`)
+Interactive playground for querying knowledge bases with full control over runtime settings (retrieval reasoning effort, output mode, source-specific parameters, reranker threshold).
+
+**Use when:** You want advanced RAG experimentation, testing different retrieval strategies, or adjusting query behavior over your data.
+
+### 3. Agents (`/agents`)
+Explore Azure AI Foundry Agent Service integration with Knowledge Bases.
+
+**Use when:** You need a production-ready managed agent service with built-in orchestration for diverse knowledge sources and multi-turn conversations.
 
 ## Contributing
+
 PRs welcome. Keep changes small and typed. Run `npm run build` before submitting.
 
 ## License
+
 MIT – see `LICENSE`.
 
 ## Resources
-Azure AI Search Docs: https://learn.microsoft.com/azure/search/
-Azure AI Foundry Assistants: https://learn.microsoft.com/azure/ai-services/agents/
-Model Context Protocol: https://modelcontextprotocol.io/
 
----
-If you need the full original detailed README, retrieve it from prior commits or project history.
+- [Azure AI Search Documentation](https://learn.microsoft.com/azure/search/)
+- [Azure AI Foundry Documentation](https://learn.microsoft.com/azure/ai-foundry/)

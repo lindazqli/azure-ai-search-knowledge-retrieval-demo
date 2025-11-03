@@ -15,6 +15,80 @@ import { cn } from '@/lib/utils'
 import { getRuntimeProperties, getHeaderGuidance, getKindDisplayName } from '@/lib/sourceKinds'
 import { SourceKindIcon } from '@/components/source-kind-icon'
 
+// Tooltip component that supports rich content with smart positioning
+function InfoTooltip({ children }: { children: React.ReactNode }) {
+  const [isVisible, setIsVisible] = React.useState(false)
+  const [position, setPosition] = React.useState<'top' | 'bottom'>('top')
+  const triggerRef = React.useRef<HTMLDivElement>(null)
+  const tooltipRef = React.useRef<HTMLDivElement>(null)
+
+  const updatePosition = () => {
+    if (!triggerRef.current || !tooltipRef.current) return
+
+    const triggerRect = triggerRef.current.getBoundingClientRect()
+    const tooltipRect = tooltipRef.current.getBoundingClientRect()
+    const spaceAbove = triggerRect.top
+    const spaceBelow = window.innerHeight - triggerRect.bottom
+    const tooltipHeight = tooltipRect.height
+
+    // Position below if not enough space above or if near top of viewport
+    if (spaceAbove < tooltipHeight + 16 || triggerRect.top < 100) {
+      setPosition('bottom')
+    } else {
+      setPosition('top')
+    }
+  }
+
+  React.useEffect(() => {
+    if (isVisible) {
+      // Slight delay to ensure tooltip is rendered before calculating position
+      setTimeout(updatePosition, 0)
+    }
+  }, [isVisible])
+
+  return (
+    <div className="relative inline-block">
+      <div
+        ref={triggerRef}
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
+        className="inline-flex items-center"
+      >
+        <Info20Regular className="h-3.5 w-3.5 text-fg-muted hover:text-fg-default cursor-help transition-colors" />
+      </div>
+      
+      {isVisible && (
+        <div
+          ref={tooltipRef}
+          className={cn(
+            "absolute z-[100] w-72 max-w-[90vw] rounded-lg border border-stroke-divider bg-bg-canvas px-3 py-2 text-xs shadow-xl animate-in fade-in-0 zoom-in-95",
+            position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
+          )}
+          style={{ 
+            left: '50%', 
+            transform: 'translateX(-50%)',
+            maxHeight: '300px',
+            overflowY: 'auto'
+          }}
+          onMouseEnter={() => setIsVisible(true)}
+          onMouseLeave={() => setIsVisible(false)}
+        >
+          {children}
+          <div 
+            className={cn(
+              "absolute h-2 w-2 rotate-45 bg-bg-canvas border-stroke-divider",
+              position === 'top' 
+                ? 'bottom-[-5px] border-r border-b' 
+                : 'top-[-5px] border-l border-t'
+            )}
+            style={{ left: '50%', transform: 'translateX(-50%)' }} 
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
 type KnowledgeSourceParam = {
   knowledgeSourceName: string
   kind: string
@@ -22,8 +96,14 @@ type KnowledgeSourceParam = {
   includeReferences?: boolean
   includeReferenceSourceData?: boolean
   rerankerThreshold?: number | null
-  maxSubQueries?: number | null
   headers?: Record<string, string>
+  // Type-specific properties
+  filterAddOn?: string | null              // searchIndex only
+  filterExpressionAddOn?: string | null    // remoteSharePoint only
+  language?: string | null                 // web only
+  market?: string | null                   // web only
+  count?: number | null                    // web only
+  freshness?: string | null                // web only
 }
 
 interface RuntimeSettings {
@@ -41,7 +121,6 @@ type KnowledgeSource = {
   includeReferences?: boolean
   includeReferenceSourceData?: boolean | null
   alwaysQuerySource?: boolean | null
-  maxSubQueries?: number | null
   rerankerThreshold?: number | null
 }
 
@@ -101,7 +180,6 @@ export function RuntimeSettingsPanel({
           includeReferences: ks.includeReferences ?? true,
           includeReferenceSourceData: ks.includeReferenceSourceData ?? false,
           rerankerThreshold: ks.rerankerThreshold,
-          maxSubQueries: ks.maxSubQueries,
           headers: {}
         }
       })
@@ -204,7 +282,25 @@ export function RuntimeSettingsPanel({
       {/* Global Request Headers */}
       <div className="space-y-3">
         <div className="flex items-center justify-between border-b border-stroke-divider pb-2">
-          <h4 className="text-sm font-medium">Request Headers</h4>
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-medium">Request Headers</h4>
+            <InfoTooltip>
+              <div className="space-y-2">
+                <p className="font-medium text-fg-default">Common Headers</p>
+                <p className="text-fg-muted text-[11px]"><code className="px-1 py-0.5 bg-bg-subtle rounded text-[10px]">x-ms-query-source-authorization</code></p>
+                <p className="text-fg-muted text-[10px]">Required for Remote SharePoint. Use Entra ID token with <code className="px-1 py-0.5 bg-bg-subtle rounded">https://search.azure.com</code> audience.</p>
+                <a
+                  href="https://learn.microsoft.com/azure/search/search-document-level-access-overview"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:underline inline-flex items-center gap-1 text-[10px]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Learn More →
+                </a>
+              </div>
+            </InfoTooltip>
+          </div>
           <Button
             type="button"
             variant="ghost"
@@ -269,16 +365,6 @@ export function RuntimeSettingsPanel({
         ) : (
           <p className="text-xs text-fg-muted italic">No request headers configured</p>
         )}
-
-        <div className="bg-bg-subtle border border-stroke-divider rounded p-3 space-y-2">
-          <p className="text-xs text-fg-default font-medium">💡 Common Request Headers</p>
-          <ul className="text-xs text-fg-muted space-y-1 ml-4 list-disc">
-            <li>
-              <code className="px-1 py-0.5 bg-bg-card rounded">x-ms-query-source-authorization</code> - Required for Remote SharePoint, optional for other sources with ACL
-            </li>
-            <li>Use an Azure AD token with <code className="px-1 py-0.5 bg-bg-card rounded">https://search.azure.com</code> audience</li>
-          </ul>
-        </div>
       </div>
 
       {/* Output Configuration */}
@@ -324,9 +410,19 @@ export function RuntimeSettingsPanel({
 
         {/* Retrieval Reasoning Effort */}
         <div className="space-y-2">
-          <label htmlFor="reasoning-effort" className="text-xs font-medium text-fg-default">
-            Retrieval Reasoning Effort
-          </label>
+          <div className="flex items-center gap-2">
+            <label htmlFor="reasoning-effort" className="text-xs font-medium text-fg-default">
+              Retrieval Reasoning Effort
+            </label>
+            <InfoTooltip>
+              <div className="space-y-1">
+                <p className="text-fg-muted text-[11px]"><strong>Minimal:</strong> Fast retrieval</p>
+                <p className="text-fg-muted text-[11px]"><strong>Low:</strong> Better relevance</p>
+                <p className="text-fg-muted text-[11px]"><strong>Medium:</strong> Advanced reasoning</p>
+                <p className="text-fg-muted text-[10px] mt-1.5">Higher = more latency/cost</p>
+              </div>
+            </InfoTooltip>
+          </div>
           <Select
             value={settings.reasoningEffort || 'minimal'}
             onValueChange={(value: 'minimal' | 'low' | 'medium' | 'high') => {
@@ -347,46 +443,49 @@ export function RuntimeSettingsPanel({
               </SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-xs text-fg-muted">
-            Controls retrieval reasoning complexity
-          </p>
         </div>
 
-        {/* Retrieval Instructions */}
+        {/* Retrieval Instructions (Read-Only) */}
         <div className="space-y-2">
-          <label htmlFor="retrieval-instructions" className="text-xs font-medium text-fg-default">
-            Retrieval Instructions
-          </label>
+          <div className="flex items-center gap-2">
+            <label htmlFor="retrieval-instructions" className="text-xs font-medium text-fg-default">
+              Retrieval Instructions
+            </label>
+            <span className="text-[10px] font-normal text-fg-muted bg-bg-subtle px-2 py-0.5 rounded border border-stroke-divider">Read-only</span>
+            <InfoTooltip>
+              <p className="text-fg-muted text-[11px]">Set on KB definition. Update the KB to modify.</p>
+            </InfoTooltip>
+          </div>
           <textarea
             id="retrieval-instructions"
             value={settings.retrievalInstructions || ''}
-            onChange={(e) => onSettingsChange({ ...settings, retrievalInstructions: e.target.value })}
-            placeholder="Optional instructions to guide the retrieval process..."
+            readOnly
+            placeholder="No retrieval instructions configured on this knowledge base"
             rows={3}
-            className="w-full px-3 py-2 text-xs rounded-md border border-stroke-divider bg-bg-card focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+            className="w-full px-3 py-2 text-xs rounded-md border border-stroke-divider bg-bg-subtle text-fg-muted focus:outline-none resize-none cursor-not-allowed"
           />
-          <p className="text-xs text-fg-muted">
-            Guide how sources are retrieved (configured on the knowledge base)
-          </p>
         </div>
 
-        {/* Answer Instructions (only shown for Answer Synthesis mode) */}
+        {/* Answer Instructions (Read-Only, only shown for Answer Synthesis mode) */}
         {settings.outputMode === 'answerSynthesis' && (
           <div className="space-y-2">
-            <label htmlFor="answer-instructions" className="text-xs font-medium text-fg-default">
-              Answer Instructions
-            </label>
+            <div className="flex items-center gap-2">
+              <label htmlFor="answer-instructions" className="text-xs font-medium text-fg-default">
+                Answer Instructions
+              </label>
+              <span className="text-[10px] font-normal text-fg-muted bg-bg-subtle px-2 py-0.5 rounded border border-stroke-divider">Read-only</span>
+              <InfoTooltip>
+                <p className="text-fg-muted text-[11px]">Set on KB definition. Update the KB to modify.</p>
+              </InfoTooltip>
+            </div>
             <textarea
               id="answer-instructions"
               value={settings.answerInstructions || ''}
-              onChange={(e) => onSettingsChange({ ...settings, answerInstructions: e.target.value })}
-              placeholder="Optional instructions to guide answer generation..."
+              readOnly
+              placeholder="No answer instructions configured on this knowledge base"
               rows={3}
-              className="w-full px-3 py-2 text-xs rounded-md border border-stroke-divider bg-bg-card focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+              className="w-full px-3 py-2 text-xs rounded-md border border-stroke-divider bg-bg-subtle text-fg-muted focus:outline-none resize-none cursor-not-allowed"
             />
-            <p className="text-xs text-fg-muted">
-              Guide how answers are synthesized (configured on the knowledge base)
-            </p>
           </div>
         )}
       </div>
@@ -531,44 +630,151 @@ export function RuntimeSettingsPanel({
                     </label>
                   </div>
 
-                  {/* Number Inputs */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label htmlFor={`reranker-${param.knowledgeSourceName}`} className="text-xs font-medium text-fg-default">
-                        Reranker Threshold
-                      </label>
-                      <Input
-                        id={`reranker-${param.knowledgeSourceName}`}
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="1"
-                        value={param.rerankerThreshold ?? ''}
-                        onChange={(e) => updateSourceParam(param.knowledgeSourceName, {
-                          rerankerThreshold: e.target.value ? parseFloat(e.target.value) : null
-                        })}
-                        placeholder="0.5"
-                        className="h-8 text-xs"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label htmlFor={`max-queries-${param.knowledgeSourceName}`} className="text-xs font-medium text-fg-default">
-                        Max Sub-Queries
-                      </label>
-                      <Input
-                        id={`max-queries-${param.knowledgeSourceName}`}
-                        type="number"
-                        min="1"
-                        value={param.maxSubQueries ?? ''}
-                        onChange={(e) => updateSourceParam(param.knowledgeSourceName, {
-                          maxSubQueries: e.target.value ? parseInt(e.target.value) : null
-                        })}
-                        placeholder="5"
-                        className="h-8 text-xs"
-                      />
-                    </div>
+                  {/* Base Parameter: Reranker Threshold */}
+                  <div className="space-y-1">
+                    <label htmlFor={`reranker-${param.knowledgeSourceName}`} className="text-xs font-medium text-fg-default">
+                      Reranker Threshold
+                    </label>
+                    <Input
+                      id={`reranker-${param.knowledgeSourceName}`}
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="4"
+                      value={param.rerankerThreshold ?? ''}
+                      onChange={(e) => updateSourceParam(param.knowledgeSourceName, {
+                        rerankerThreshold: e.target.value ? parseFloat(e.target.value) : null
+                      })}
+                      placeholder="0.5"
+                      className="h-8 text-xs"
+                    />
                   </div>
+
+                  {/* Type-Specific Parameters */}
+                  {(() => {
+                    const kind = param.kind.toLowerCase()
+                    
+                    // Search Index: filterAddOn
+                    if (kind === 'searchindex') {
+                      return (
+                        <div className="space-y-1">
+                          <label htmlFor={`filter-${param.knowledgeSourceName}`} className="text-xs font-medium text-fg-default">
+                            Filter Add-On
+                          </label>
+                          <Input
+                            id={`filter-${param.knowledgeSourceName}`}
+                            type="text"
+                            value={param.filterAddOn ?? ''}
+                            onChange={(e) => updateSourceParam(param.knowledgeSourceName, {
+                              filterAddOn: e.target.value || null
+                            })}
+                            placeholder="category eq 'technical'"
+                            className="h-8 text-xs"
+                          />
+                          <p className="text-[10px] text-fg-muted">OData filter expression</p>
+                        </div>
+                      )
+                    }
+                    
+                    // Remote SharePoint: filterExpressionAddOn
+                    if (kind === 'remotesharepoint') {
+                      return (
+                        <div className="space-y-1">
+                          <label htmlFor={`filter-${param.knowledgeSourceName}`} className="text-xs font-medium text-fg-default">
+                            Filter Expression Add-On
+                          </label>
+                          <Input
+                            id={`filter-${param.knowledgeSourceName}`}
+                            type="text"
+                            value={param.filterExpressionAddOn ?? ''}
+                            onChange={(e) => updateSourceParam(param.knowledgeSourceName, {
+                              filterExpressionAddOn: e.target.value || null
+                            })}
+                            placeholder="contentclass:STS_ListItem_DocumentLibrary"
+                            className="h-8 text-xs"
+                          />
+                          <p className="text-[10px] text-fg-muted">SharePoint KQL filter</p>
+                        </div>
+                      )
+                    }
+                    
+                    // Web: language, market, count, freshness
+                    if (kind === 'web') {
+                      return (
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label htmlFor={`language-${param.knowledgeSourceName}`} className="text-xs font-medium text-fg-default">
+                                Language
+                              </label>
+                              <Input
+                                id={`language-${param.knowledgeSourceName}`}
+                                type="text"
+                                value={param.language ?? ''}
+                                onChange={(e) => updateSourceParam(param.knowledgeSourceName, {
+                                  language: e.target.value || null
+                                })}
+                                placeholder="en-US"
+                                className="h-8 text-xs"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label htmlFor={`market-${param.knowledgeSourceName}`} className="text-xs font-medium text-fg-default">
+                                Market
+                              </label>
+                              <Input
+                                id={`market-${param.knowledgeSourceName}`}
+                                type="text"
+                                value={param.market ?? ''}
+                                onChange={(e) => updateSourceParam(param.knowledgeSourceName, {
+                                  market: e.target.value || null
+                                })}
+                                placeholder="en-US"
+                                className="h-8 text-xs"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <label htmlFor={`count-${param.knowledgeSourceName}`} className="text-xs font-medium text-fg-default">
+                                Result Count
+                              </label>
+                              <Input
+                                id={`count-${param.knowledgeSourceName}`}
+                                type="number"
+                                min="1"
+                                max="50"
+                                value={param.count ?? ''}
+                                onChange={(e) => updateSourceParam(param.knowledgeSourceName, {
+                                  count: e.target.value ? parseInt(e.target.value) : null
+                                })}
+                                placeholder="10"
+                                className="h-8 text-xs"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label htmlFor={`freshness-${param.knowledgeSourceName}`} className="text-xs font-medium text-fg-default">
+                                Freshness
+                              </label>
+                              <Input
+                                id={`freshness-${param.knowledgeSourceName}`}
+                                type="text"
+                                value={param.freshness ?? ''}
+                                onChange={(e) => updateSourceParam(param.knowledgeSourceName, {
+                                  freshness: e.target.value || null
+                                })}
+                                placeholder="Week"
+                                className="h-8 text-xs"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    }
+                    
+                    // Other kinds: no additional parameters
+                    return null
+                  })()}
 
                   {/* Custom Headers (MCP Tool Sources Only) */}
                   {isMCP && (

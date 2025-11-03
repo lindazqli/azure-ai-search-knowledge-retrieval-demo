@@ -80,6 +80,7 @@ export interface PropertyConfig {
 
 /**
  * Base runtime properties available for ALL knowledge source kinds
+ * Based on Azure AI Search Knowledge Agents API (2025-11-01-preview swagger)
  */
 const baseProperties: PropertyConfig[] = [
   {
@@ -106,31 +107,115 @@ const baseProperties: PropertyConfig[] = [
   {
     name: 'rerankerThreshold',
     label: 'Reranker Threshold',
-    description: 'Minimum reranker score for results (0.0-5.0)',
+    description: 'Minimum reranker score for results (0.0-4.0)',
     type: 'number',
     min: 0,
-    max: 5,
+    max: 4,
     step: 0.1,
-    placeholder: '1.0'
+    placeholder: '0.5'
+  }
+]
+
+/**
+ * Search Index specific properties
+ */
+const searchIndexProperties: PropertyConfig[] = [
+  {
+    name: 'filterAddOn',
+    label: 'Filter Add-On',
+    description: 'OData filter expression to apply to search queries',
+    type: 'string',
+    placeholder: "category eq 'technical'"
+  }
+]
+
+/**
+ * Remote SharePoint specific properties
+ */
+const remoteSharePointProperties: PropertyConfig[] = [
+  {
+    name: 'filterExpressionAddOn',
+    label: 'Filter Expression Add-On',
+    description: 'Filter expression to apply to SharePoint queries',
+    type: 'string',
+    placeholder: "contentclass:STS_ListItem_DocumentLibrary"
+  }
+]
+
+/**
+ * Web specific properties
+ */
+const webProperties: PropertyConfig[] = [
+  {
+    name: 'language',
+    label: 'Language',
+    description: 'Language code for web search (e.g., en-US)',
+    type: 'string',
+    placeholder: 'en-US'
   },
   {
-    name: 'maxSubQueries',
-    label: 'Max Sub-Queries',
-    description: 'Maximum number of sub-queries to generate',
+    name: 'market',
+    label: 'Market',
+    description: 'Market code for web search (e.g., en-US)',
+    type: 'string',
+    placeholder: 'en-US'
+  },
+  {
+    name: 'count',
+    label: 'Result Count',
+    description: 'Number of web results to return',
     type: 'number',
     min: 1,
-    max: 20,
+    max: 50,
     step: 1,
-    placeholder: '5'
+    placeholder: '10'
+  },
+  {
+    name: 'freshness',
+    label: 'Freshness',
+    description: 'Time period for results (Day, Week, Month)',
+    type: 'string',
+    placeholder: 'Week'
   }
 ]
 
 /**
  * Get runtime property configuration for a knowledge source kind
+ * Returns base properties + kind-specific properties based on API spec
  */
 export function getRuntimeProperties(kind: string): PropertyConfig[] {
-  // All kinds get base properties
-  return [...baseProperties]
+  const properties = [...baseProperties]
+  
+  switch (kind.toLowerCase()) {
+    case 'searchindex':
+    case SourceKind.SearchIndex:
+      return [...properties, ...searchIndexProperties]
+    
+    case 'remotesharepoint':
+    case SourceKind.RemoteSharePoint:
+      return [...properties, ...remoteSharePointProperties]
+    
+    case 'web':
+    case SourceKind.Web:
+      return [...properties, ...webProperties]
+    
+    case 'azureblob':
+    case SourceKind.AzureBlob:
+    case 'indexedsharepoint':
+    case SourceKind.IndexedSharePoint:
+    case 'indexedonelake':
+    case SourceKind.IndexedOneLake:
+      // These kinds only have base properties
+      return properties
+    
+    case 'mcptool':
+      // MCP tools have base properties + custom headers
+      return properties
+    
+    default:
+      // Unknown kinds get base properties
+      return properties
+  }
 }
 
 /**
