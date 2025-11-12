@@ -16,7 +16,7 @@
 - Repository: `https://github.com/farzad528/azure-ai-search-knowledge-retrieval-demo`
 
 **What This Project Is:**
-- Production-ready Next.js application for Azure AI Search Knowledge Retrieval
+- Production-ready Next.js application (Foundry IQ Demo) for Azure AI Search Knowledge Retrieval
 - Showcases Knowledge Bases (Azure AI Search direct queries) and Azure AI Foundry Agent Service integration
 - **No major technical architecture changes** - feature updates only
 - Frontend: Next.js 14 + React 18 + TypeScript + TailwindCSS
@@ -243,7 +243,7 @@ npm run build
 For API testing, the repository includes `.http` files for manual testing with REST clients:
 - `agentsv2-test.http` - Test Agents v2 API endpoints
 - `ka-demo.http`, `ka-foundry-test.http` - Knowledge Base API tests
-- `foundry-knowledge-*.http` - Foundry Knowledge integration tests
+- `foundry-knowledge-*.http` - Foundry IQ integration tests (legacy file prefix retained)
 
 ---
 

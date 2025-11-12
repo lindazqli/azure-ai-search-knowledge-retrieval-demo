@@ -1,4 +1,4 @@
-# Azure AI Search – Foundry Knowledge Demo
+# Azure AI Search – Foundry IQ Demo
 
 Production-ready Next.js app demonstrating advanced RAG with Azure AI Search Knowledge Bases and Azure AI Foundry Agent Service.
 

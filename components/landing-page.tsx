@@ -47,7 +47,7 @@ const customerBenefits = [
   },
   {
     title: "Centralized RAG expertise",
-    description: "Foundry Knowledge was designed to ground enterprise agents, so developers don't need to become RAG experts. Focus on agent logic instead of knowledge infrastructure plumbing."
+    description: "Foundry IQ was designed to ground enterprise agents, so developers don't need to become RAG experts. Focus on agent logic instead of knowledge infrastructure plumbing."
   }
 ]
 
@@ -177,14 +177,14 @@ export function LandingPage() {
                 >
                   <Image
                     src="/icons/ai-foundry.png"
-                    alt="Azure AI Foundry Knowledge"
+                    alt="Azure AI Foundry IQ"
                     width={48}
                     height={48}
                     className="brightness-0 invert"
                   />
                 </motion.div>
                 <CardTitle className="text-3xl text-fg-default mb-3">
-                  Azure AI Foundry Knowledge
+                  Azure AI Foundry IQ
                 </CardTitle>
                 <CardDescription className="text-lg text-fg-muted max-w-md">
                   Intelligent knowledge retrieval and agentic chat experiences powered by Azure AI Search and Foundry Agent Service

@@ -8,7 +8,7 @@ import { ToastProvider } from '@/components/ui/toast'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Foundry Knowledge Demo',
+  title: 'Foundry IQ Demo',
   description: 'Intelligent knowledge retrieval and agentic chat experiences powered by Azure AI Search and Foundry Agent Service',
 }
 
