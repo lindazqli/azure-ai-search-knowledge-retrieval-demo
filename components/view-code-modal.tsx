@@ -65,12 +65,7 @@ curl -X POST "https://{search-service}.search.windows.net/agents/${agentId}/retr
         "content": "What information is available about Azure AI Search?"
       }
     ]
-  }'
-
-# Response includes:
-# - Generated answer from the agent
-# - References to source documents
-# - Activity details showing search operations`
+  }'`
 
   const pythonCode = `# pip install azure-search-documents==11.7.0b1
 

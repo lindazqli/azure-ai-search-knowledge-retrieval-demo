@@ -224,12 +224,7 @@ export function KBViewCodeModal({ isOpen, onClose, agentId, agentName, messages,
 curl -X POST "${searchEndpoint}/knowledgebases/${agentId}/retrieve?api-version=2025-11-01-preview" \\
   -H "Content-Type: application/json" \\
   -H "api-key: \${AZURE_SEARCH_API_KEY}" \\
-  -d '${requestBodyJson}'
-
-# Response includes:
-# - Generated answer from the agent
-# - References to source documents with citations
-# - Activity details showing search operations and token usage`
+  -d '${requestBodyJson}'`
   }
 
   // Generate Python code
