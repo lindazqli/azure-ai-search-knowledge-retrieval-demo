@@ -24,7 +24,8 @@
         "label": { "type": "string" },
         "prompt": { "type": "string" },
         "complexity": { "type": "string", "enum": ["Simple", "Moderate", "Advanced"] },
-        "tags": { "type": "array", "items": { "type": "string" } }
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "imageUrl": { "type": "string" }
       },
       "additionalProperties": false
     },

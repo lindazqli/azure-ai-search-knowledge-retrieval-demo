@@ -120,6 +120,33 @@
           "tags": ["turbines", "capacity", "manufacturer"]
         }
       ]
+    },
+    {
+      "agentIds": ["zava-knowledge-base"],
+      "starters": [
+        {
+          "id": "zava-marathon-comparison",
+          "label": "Marathon Queue & Emergency Planning",
+          "prompt": "Comparing expected finish times and crowd surges at the St. Louis and Washington DC marathons, how should Zava set up queue lines and emergency egress for an on-site merch booth using Zava Store Safety and Popup Safety guidelines",
+          "complexity": "Moderate",
+          "tags": ["marathon", "safety", "crowd-management"]
+        },
+        {
+          "id": "zava-sandiego-popup",
+          "label": "San Diego Marathon Popup Timing",
+          "prompt": "Based on the road closures, crowd density patterns, and spectator windows for the Sun & Surf Marathon in San Diego and using the Zava Live Event Popup Safety guidelines, what time should our Zava pop-up crew complete load-in, and what crowd-surge risks should we prepare for?",
+          "complexity": "Moderate",
+          "tags": ["marathon", "popup", "timing", "safety"]
+        },
+        {
+          "id": "zava-supply-chain-analysis",
+          "label": "Supply Chain Analysis with Image",
+          "prompt": "Here is an image of Zava's global production and distribution map. Using the image AND the Zava Corporate PDF, explain how the supply chain works end-to-end. Then identify which of these facilities would face the biggest operational risk during a major marathon weekend in the same city (e.g., St. Louis or Seattle), using marathon road-closure data. Recommend adjustments to shipping or staffing based on both the supply-chain map and the city marathon constraints.",
+          "complexity": "Advanced",
+          "tags": ["multi-source", "image-upload", "supply-chain", "marathon"],
+          "imageUrl": "/icons/zava-sample-img.png"
+        }
+      ]
     }
   ]
 }

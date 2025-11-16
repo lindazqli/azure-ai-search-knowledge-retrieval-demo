@@ -954,10 +954,14 @@ function MessageBubble({ message, onOpenDocument, agent }: { message: Message, o
                           const activity = message.activity?.find(a => a.id === ref.activitySource)
                           const label = activity?.knowledgeSourceName || fileName
                           
+                          // Get citation URL for tooltip
+                          const citationUrl = ref.blobUrl || (ref as any).webUrl || (ref as any).url || (ref as any).docUrl || ref.docKey || null
+                          const tooltipText = citationUrl ? `${label}\n\nURL: ${citationUrl}` : label
+                          
                           return (
                             <div id={`ref-${message.id}-${idx}`} key={ref.id + (ref.blobUrl || '')} className="p-3 bg-bg-subtle rounded-md group border border-transparent hover:border-accent/40 transition w-full">
                               <div className="flex items-center justify-between mb-2">
-                                <span className="flex items-center gap-1 text-xs font-medium text-accent">
+                                <span className="flex items-center gap-1 text-xs font-medium text-accent" title={tooltipText}>
                                   <SourceKindIcon kind={ref.type} size={14} variant="plain" />
                                   {label || ref.type}
                                 </span>

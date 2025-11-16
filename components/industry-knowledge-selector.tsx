@@ -8,7 +8,8 @@ import {
   ArrowRight20Regular,
   BuildingFactory20Regular,
   HeartPulse20Regular,
-  MoneyHand20Regular
+  MoneyHand20Regular,
+  ShoppingBag20Regular
 } from '@fluentui/react-icons'
 import { useRouter } from 'next/navigation'
 
@@ -53,6 +54,16 @@ const INDUSTRY_KNOWLEDGE_BASES: IndustryKnowledgeBase[] = [
     iconBg: 'bg-green-500/10',
     iconColor: 'text-green-600 dark:text-green-500',
     agentName: 'financial-knowledge-base'
+  },
+  {
+    id: 'zava',
+    name: 'Zava Knowledge Base',
+    industry: 'Retail & Events',
+    description: 'Marathon event data, popup safety guidelines, store operations, crowd management protocols, and supply chain logistics',
+    icon: ShoppingBag20Regular,
+    iconBg: 'bg-purple-500/10',
+    iconColor: 'text-purple-600 dark:text-purple-500',
+    agentName: 'zava-knowledge-base'
   }
 ]
 
@@ -85,7 +96,7 @@ export function IndustryKnowledgeSelector() {
         </motion.div>
 
         {/* Knowledge Base Cards */}
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {INDUSTRY_KNOWLEDGE_BASES.map((kb, index) => {
             const Icon = kb.icon
             const isSelected = selectedKB === kb.id

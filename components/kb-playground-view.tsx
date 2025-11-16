@@ -424,14 +424,36 @@ export function KBPlaygroundView({ preselectedAgent }: KBPlaygroundViewProps) {
       .filter(Boolean)
   }
 
-  const sendPrompt = async (prompt: string) => {
+  const sendPrompt = async (prompt: string, imageUrl?: string) => {
     if (!selectedAgent || isLoading) return
+    
+    // If imageUrl is provided, load it and convert to base64
+    const contentParts: MessageContent[] = []
+    
+    if (imageUrl) {
+      try {
+        // Fetch the image and convert to base64
+        const response = await fetch(imageUrl)
+        const blob = await response.blob()
+        const reader = new FileReader()
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(blob)
+        })
+        contentParts.push({ type: 'image', image: { url: dataUrl } })
+      } catch (error) {
+        console.error('Failed to load image:', error)
+      }
+    }
+    
+    contentParts.push({ type: 'text', text: prompt })
     
     // Set input and submit immediately
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: [{ type: 'text', text: prompt }],
+      content: contentParts,
       timestamp: new Date()
     }
 
@@ -452,7 +474,7 @@ export function KBPlaygroundView({ preselectedAgent }: KBPlaygroundViewProps) {
         }))),
         {
           role: 'user' as const,
-          content: [{ type: 'text', text: prompt }]
+          content: await Promise.all(contentParts.map(convertContent))
         }
       ]
 
@@ -644,13 +666,8 @@ export function KBPlaygroundView({ preselectedAgent }: KBPlaygroundViewProps) {
         apiParams.knowledgeSourceParams = knowledgeSourceParamsSubmit
       }
 
-      // Always request references and their source data in the playground
-      if (typeof apiParams.includeReferences === 'undefined') {
-        apiParams.includeReferences = true
-      }
-      if (typeof apiParams.includeReferenceSourceData === 'undefined') {
-        apiParams.includeReferenceSourceData = true
-      }
+      // Note: includeReferences and includeReferenceSourceData are set per-source in knowledgeSourceParams,
+      // not as top-level parameters in the retrieve API (API version 2025-11-01-preview)
 
       // Debug logging - HANDLE SUBMIT
       console.log('🔍 API Request Payload (handleSubmit):')
@@ -834,12 +851,13 @@ export function KBPlaygroundView({ preselectedAgent }: KBPlaygroundViewProps) {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
                   {starters.map((s, idx) => {
-                    const requiresImage = s.prompt.toLowerCase().includes('upload')
+                    const requiresImage = s.prompt.toLowerCase().includes('upload') || s.imageUrl
+                    const hasPreloadedImage = !!s.imageUrl
                     return (
                       <Card
                         key={idx}
                         className={cn('relative cursor-pointer hover:elevation-sm hover:scale-105 transition-all duration-150 bg-bg-card border border-stroke-divider active:scale-95')}
-                        onClick={() => sendPrompt(s.prompt)}
+                        onClick={() => sendPrompt(s.prompt, s.imageUrl)}
                       >
                         <CardContent className="p-4 text-left space-y-2">
                           <div className="flex items-center justify-between">

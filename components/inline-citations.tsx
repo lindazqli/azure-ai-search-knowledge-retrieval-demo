@@ -41,6 +41,11 @@ export const InlineCitationsText: React.FC<InlineCitationsTextProps> = ({
       const activityEntry = ref ? activity.find((a: any) => a.id === ref.activitySource) : undefined
       const fileName = ref?.blobUrl ? decodeURIComponent(ref.blobUrl.split('/').pop() || ref.id) : (ref?.docKey || ref?.id)
       const label = activityEntry?.knowledgeSourceName || fileName || `Reference ${refIdx + 1}`
+      
+      // Get citation URL for tooltip
+      const citationUrl = ref?.blobUrl || (ref as any)?.webUrl || (ref as any)?.url || (ref as any)?.docUrl || ref?.docKey || null
+      const tooltipText = citationUrl ? `${label}\n\nURL: ${citationUrl}` : label
+      
       nodes.push(
         <button
           key={`cite-${match.index}`}
@@ -56,7 +61,7 @@ export const InlineCitationsText: React.FC<InlineCitationsTextProps> = ({
             }
           }}
           aria-label={`View reference ${label}`}
-          title={label}
+          title={tooltipText}
           className="align-baseline inline-flex items-center gap-1 ml-1 mb-0.5 px-1.5 py-0.5 rounded bg-accent-subtle hover:bg-accent/20 hover:underline underline-offset-2 text-accent text-[10px] font-medium transition focus:outline-none focus:ring-1 focus:ring-accent max-w-[170px]"
         >
           <span className="truncate max-w-[130px]">{label}</span>
