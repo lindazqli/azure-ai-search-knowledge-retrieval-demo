@@ -1,6 +1,6 @@
 # Azure AI Search – Foundry IQ Demo
 
-Agentic RAG demo with Foundry IQ and Azure AI Foundry Agent Service.
+Agentic RAG demo with Foundry IQ and Microsoft Foundry Agent Service.
 
 ## Deploy
 
@@ -37,13 +37,13 @@ AZURE_OPENAI_API_KEY=<openai-key>
 |-------|-------------|
 | `/knowledge` | Manage knowledge bases and data sources |
 | `/playground` | Query knowledge bases with runtime controls |
-| `/agents` | Azure AI Foundry Agent Service integration |
+| `/agents` | Microsoft Foundry Agent Service integration |
 
 ## Resources
 
 - [Foundry IQ Blog](https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/foundry-iq-unlocking-ubiquitous-knowledge-for-agents/4470812)
 - [Azure AI Search Docs](https://learn.microsoft.com/azure/search/)
-- [Azure AI Foundry Docs](https://learn.microsoft.com/azure/ai-foundry/)
+- [Microsoft Foundry Docs](https://learn.microsoft.com/azure/ai-foundry/)
 - [AGENTS.md](./AGENTS.md) – Detailed agent guidance
 
 ## License
