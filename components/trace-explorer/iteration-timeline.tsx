@@ -104,7 +104,7 @@ export function IterationTimeline({ iterations, className }: IterationTimelinePr
 function PhaseBadge({ label, tone }: { label: string; tone: string }) {
   const toneColors: Record<string, string> = {
     planning: 'bg-blue-500/10 border-blue-500/30 text-blue-600',
-    retrieval: 'bg-purple-500/10 border-purple-500/30 text-purple-600',
+    retrieval: 'bg-sky-500/10 border-sky-500/30 text-sky-600',
     assessment: 'bg-amber-500/10 border-amber-500/30 text-amber-600',
     synthesis: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600',
   }

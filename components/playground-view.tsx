@@ -519,7 +519,7 @@ export function PlaygroundView() {
                   <span className={cn(
                     'text-[10px] uppercase tracking-wide px-2 py-0.5 rounded font-medium',
                     selectedAgent.outputConfiguration?.modality === 'answerSynthesis' && 'bg-accent-subtle text-accent',
-                    selectedAgent.outputConfiguration?.modality === 'extractiveData' && 'bg-purple-100/50 text-purple-600 dark:text-purple-300'
+                    selectedAgent.outputConfiguration?.modality === 'extractiveData' && 'bg-slate-100 text-slate-600 dark:bg-slate-800/50 dark:text-slate-300'
                   )}>
                     {selectedAgent.outputConfiguration?.modality === 'answerSynthesis' && 'Answer'}
                     {selectedAgent.outputConfiguration?.modality === 'extractiveData' && 'Extract'}
@@ -633,7 +633,7 @@ export function PlaygroundView() {
                             <div className="text-[11px] uppercase tracking-wide text-fg-muted font-medium">{s.complexity}</div>
                             <div className="flex items-center gap-1">
                               {requiresImage && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100/50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300 flex items-center gap-1">
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 dark:bg-slate-800/50 dark:text-slate-300 flex items-center gap-1">
                                   <Attach20Regular className="h-3 w-3" />
                                   Image
                                 </span>

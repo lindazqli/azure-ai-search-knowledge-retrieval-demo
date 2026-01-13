@@ -61,8 +61,8 @@ const INDUSTRY_KNOWLEDGE_BASES: IndustryKnowledgeBase[] = [
     industry: 'Retail & Events',
     description: 'Marathon event data, popup safety guidelines, store operations, crowd management protocols, and supply chain logistics',
     icon: ShoppingBag20Regular,
-    iconBg: 'bg-purple-500/10',
-    iconColor: 'text-purple-600 dark:text-purple-500',
+    iconBg: 'bg-slate-500/10',
+    iconColor: 'text-slate-600 dark:text-slate-400',
     agentName: 'zava-knowledge-base'
   }
 ]

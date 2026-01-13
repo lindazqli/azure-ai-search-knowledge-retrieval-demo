@@ -80,7 +80,7 @@ export function MagneticButton({
         initial={{ opacity: 0 }}
         animate={{ opacity: isHovered ? 1 : 0 }}
         transition={{ duration: 0.2 }}
-        className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-blue-500/10 rounded-lg pointer-events-none"
+        className="absolute inset-0 bg-accent/5 rounded-lg pointer-events-none"
       />
       {children}
     </motion.button>

@@ -186,8 +186,9 @@ export function RuntimeSettingsPanel({
       onSettingsChange({
         ...settings,
         knowledgeSourceParams: initialParams,
-        outputMode: hasWebSource ? 'answerSynthesis' : (settings.outputMode || 'answerSynthesis'),
-        reasoningEffort: settings.reasoningEffort || 'minimal'
+        // Preserve outputMode from API/parent - only override for web sources which require answerSynthesis
+        outputMode: hasWebSource ? 'answerSynthesis' : settings.outputMode
+        // Note: reasoningEffort is set by parent from API response, no override needed here
       })
     }
   }, [knowledgeSources, hasWebSource])
@@ -424,7 +425,7 @@ export function RuntimeSettingsPanel({
             </InfoTooltip>
           </div>
           <Select
-            value={settings.reasoningEffort || 'minimal'}
+            value={settings.reasoningEffort || 'low'}
             onValueChange={(value: 'minimal' | 'low' | 'medium' | 'high') => {
               // Prevent selection of 'high' as it's not supported
               if (value === 'high') return

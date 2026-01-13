@@ -426,24 +426,48 @@ export function KBPlaygroundView({ preselectedAgent }: KBPlaygroundViewProps) {
 
   const sendPrompt = async (prompt: string, imageUrl?: string) => {
     if (!selectedAgent || isLoading) return
-    
-    // If imageUrl is provided, load it and convert to base64
+
+    // If imageUrl is provided, load it and process through the same pipeline as user uploads
     const contentParts: MessageContent[] = []
-    
+
     if (imageUrl) {
       try {
-        // Fetch the image and convert to base64
+        // Fetch the image
         const response = await fetch(imageUrl)
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status}`)
+        }
         const blob = await response.blob()
-        const reader = new FileReader()
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string)
-          reader.onerror = reject
-          reader.readAsDataURL(blob)
+
+        // Convert blob to File for processing
+        const fileName = imageUrl.split('/').pop() || 'image.png'
+        const file = new File([blob], fileName, { type: blob.type || 'image/png' })
+
+        // Process through the same pipeline as user-uploaded images
+        // This ensures proper resizing, compression, and format conversion
+        const processed = await processImageFile(file, {
+          maxLongSide: 2048,
+          targetMinShortSide: 768,
+          maxBytes: 4 * 1024 * 1024
         })
-        contentParts.push({ type: 'image', image: { url: dataUrl } })
+
+        contentParts.push({ type: 'image', image: { url: processed.dataUrl } })
       } catch (error) {
-        console.error('Failed to load image:', error)
+        console.error('Failed to load/process image:', error)
+        // Fallback: try basic conversion if processImageFile fails
+        try {
+          const response = await fetch(imageUrl)
+          const blob = await response.blob()
+          const reader = new FileReader()
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string)
+            reader.onerror = reject
+            reader.readAsDataURL(blob)
+          })
+          contentParts.push({ type: 'image', image: { url: dataUrl } })
+        } catch (fallbackError) {
+          console.error('Fallback image conversion also failed:', fallbackError)
+        }
       }
     }
     
@@ -588,7 +612,21 @@ export function KBPlaygroundView({ preselectedAgent }: KBPlaygroundViewProps) {
       setSelectedAgent(agent)
       // Always start fresh - no history loading
       setMessages([])
-      setRuntimeSettings({ knowledgeSourceParams: [] }) // Reset runtime settings
+
+      // Apply knowledge base defaults from API when switching agents
+      const reasoningEffort = agent.retrievalReasoningEffort?.kind || 'low'
+      const outputMode = agent.outputMode ||
+                        (agent.outputConfiguration?.modality as 'answerSynthesis' | 'extractiveData') ||
+                        'answerSynthesis'
+
+      setRuntimeSettings({
+        outputMode: outputMode,
+        reasoningEffort: reasoningEffort,
+        globalHeaders: {},
+        answerInstructions: agent.answerInstructions || agent.outputConfiguration?.answerInstructions || '',
+        retrievalInstructions: agent.retrievalInstructions || '',
+        knowledgeSourceParams: [] // Will be populated by RuntimeSettingsPanel from agent.knowledgeSources
+      })
     }
   }
 
@@ -864,7 +902,7 @@ export function KBPlaygroundView({ preselectedAgent }: KBPlaygroundViewProps) {
                             <div className="text-[11px] uppercase tracking-wide text-fg-muted font-medium">{s.complexity}</div>
                             <div className="flex items-center gap-1">
                               {requiresImage && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100/50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300 flex items-center gap-1">
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 dark:bg-slate-800/50 dark:text-slate-300 flex items-center gap-1">
                                   <Attach20Regular className="h-3 w-3" />
                                   Image
                                 </span>
